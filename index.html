@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Megaminx Tutorial — Solve the 12-Sided Beast</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ─────────────────────────────────────────────── */
+:root {
+  --bg:       #0D1117;
+  --bg2:      #141922;
+  --card:     #1A2236;
+  --border:   #252E42;
+  --purple:   #7C3AED;
+  --purple2:  #9D5FF0;
+  --cyan:     #06B6D4;
+  --green:    #10B981;
+  --amber:    #F59E0B;
+  --red:      #EF4444;
+  --text:     #F0F4FF;
+  --muted:    #8896B0;
+  --display:  'Space Grotesk', sans-serif;
+  --body:     'Inter', sans-serif;
+  --mono:     'JetBrains Mono', monospace;
+  --radius:   12px;
+  --glow:     0 0 20px rgba(124,58,237,0.35);
+}
+[data-theme="light"] {
+  --bg:    #F4F7FF;
+  --bg2:   #FFFFFF;
+  --card:  #FFFFFF;
+  --border:#DDE3F0;
+  --text:  #0D1117;
+  --muted: #5A6480;
+}
+
+/* ── RESET ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+a { color: var(--cyan); text-decoration: none; }
+a:hover { text-decoration: underline; }
+img { max-width: 100%; border-radius: var(--radius); }
+
+/* ── PROGRESS BAR ───────────────────────────────────────── */
+#progress-bar {
+  position: fixed; top: 0; left: 0; height: 3px; width: 0;
+  background: linear-gradient(90deg, var(--purple), var(--cyan));
+  z-index: 1000; transition: width 0.1s linear;
+}
+
+/* ── HEADER ─────────────────────────────────────────────── */
+header {
+  position: sticky; top: 0; z-index: 900;
+  background: rgba(13,17,23,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 clamp(1rem, 4vw, 2.5rem);
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+[data-theme="light"] header { background: rgba(244,247,255,0.9); }
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--display); font-weight: 700; font-size: 1.1rem;
+  color: var(--text); text-decoration: none;
+}
+.logo-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--purple), var(--cyan));
+  clip-path: polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; color: white; font-weight: 700;
+}
+nav { display: flex; gap: 2rem; }
+nav a {
+  font-size: 0.875rem; font-weight: 500; color: var(--muted);
+  text-decoration: none; transition: color 0.2s;
+}
+nav a:hover { color: var(--text); }
+.header-actions { display: flex; align-items: center; gap: 12px; }
+.icon-btn {
+  background: none; border: 1px solid var(--border); border-radius: 8px;
+  width: 36px; height: 36px; cursor: pointer; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; transition: all 0.2s;
+}
+.icon-btn:hover { color: var(--text); border-color: var(--purple); }
+.hamburger { display: none; }
+@media (max-width: 768px) {
+  nav { display: none; }
+  .hamburger { display: flex; }
+}
+
+/* ── MOBILE NAV ─────────────────────────────────────────── */
+#mobile-nav {
+  display: none; position: fixed; inset: 64px 0 0;
+  background: var(--bg2); z-index: 800; padding: 2rem;
+  flex-direction: column; gap: 1.5rem;
+}
+#mobile-nav.open { display: flex; }
+#mobile-nav a { font-size: 1.1rem; font-weight: 600; color: var(--text); }
+
+/* ── HERO ───────────────────────────────────────────────── */
+.hero {
+  position: relative; overflow: hidden;
+  padding: clamp(4rem, 10vw, 7rem) clamp(1rem, 4vw, 2.5rem);
+  text-align: center;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(124,58,237,0.18) 0%, transparent 70%);
+}
+.hero-penta-bg {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+}
+.penta {
+  position: absolute;
+  clip-path: polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);
+  opacity: 0.05;
+  animation: floatPenta 20s ease-in-out infinite;
+}
+@keyframes floatPenta {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-20px) rotate(15deg); }
+}
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--purple); border-radius: 99px;
+  padding: 4px 14px; font-size: 0.78rem; font-weight: 600;
+  color: var(--purple2); margin-bottom: 1.5rem; letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-family: var(--display); font-size: clamp(2.4rem, 6vw, 4.2rem);
+  font-weight: 700; line-height: 1.1; max-width: 800px; margin: 0 auto 1.2rem;
+}
+.hero h1 span { 
+  background: linear-gradient(135deg, var(--purple), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  max-width: 560px; margin: 0 auto 2.5rem;
+  color: var(--muted); font-size: 1.1rem;
+}
+.hero-meta {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 1.5rem;
+  color: var(--muted); font-size: 0.85rem; margin-bottom: 2.5rem;
+}
+.hero-meta span { display: flex; align-items: center; gap: 5px; }
+.cta-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--purple), #5B21B6);
+  color: white; font-family: var(--display); font-weight: 600;
+  font-size: 1rem; padding: 14px 32px; border-radius: 10px;
+  border: none; cursor: pointer; transition: all 0.25s;
+  box-shadow: var(--glow);
+}
+.cta-btn:hover { transform: translateY(-2px); box-shadow: 0 0 32px rgba(124,58,237,0.5); color: white; text-decoration: none; }
+.hero-shape {
+  margin: 3rem auto 0;
+  width: clamp(200px, 40vw, 320px);
+  height: clamp(200px, 40vw, 320px);
+  position: relative;
+}
+.megaminx-svg { width: 100%; height: 100%; filter: drop-shadow(0 0 30px rgba(124,58,237,0.4)); animation: spinSlow 30s linear infinite; }
+@keyframes spinSlow { to { transform: rotate(360deg); } }
+
+/* ── LAYOUT ─────────────────────────────────────────────── */
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem clamp(1rem, 4vw, 2.5rem);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .toc-sidebar { display: none; }
+}
+
+/* ── TOC SIDEBAR ────────────────────────────────────────── */
+.toc-sidebar {
+  position: sticky; top: 80px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem;
+}
+.toc-sidebar h3 {
+  font-family: var(--display); font-size: 0.78rem; font-weight: 700;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+.toc-sidebar ol { list-style: none; counter-reset: toc; }
+.toc-sidebar li { counter-increment: toc; margin-bottom: 0.4rem; }
+.toc-sidebar a {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.85rem; color: var(--muted); padding: 5px 8px;
+  border-radius: 6px; transition: all 0.2s; text-decoration: none;
+}
+.toc-sidebar a::before {
+  content: counter(toc, decimal-leading-zero);
+  font-family: var(--mono); font-size: 0.7rem;
+  color: var(--purple); opacity: 0.7;
+}
+.toc-sidebar a:hover, .toc-sidebar a.active {
+  color: var(--text); background: rgba(124,58,237,0.12);
+}
+.toc-sidebar a.active { color: var(--purple2); }
+
+/* ── ARTICLE CONTENT ────────────────────────────────────── */
+.article { min-width: 0; }
+
+/* ── SECTION TITLES ─────────────────────────────────────── */
+.section-eyebrow {
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 600;
+  color: var(--purple2); text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+.section-title {
+  font-family: var(--display); font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700; line-height: 1.2; margin-bottom: 1rem;
+}
+.section { margin-bottom: 4rem; }
+.divider {
+  border: none; height: 1px;
+  background: linear-gradient(90deg, var(--purple), transparent);
+  margin-bottom: 3rem; opacity: 0.4;
+}
+
+/* ── INFO CARDS ─────────────────────────────────────────── */
+.info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; margin: 2rem 0; }
+.info-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem 1.5rem;
+  display: flex; flex-direction: column; gap: 0.4rem;
+}
+.info-card .ic-label {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--muted); font-weight: 600;
+}
+.info-card .ic-value { font-family: var(--display); font-weight: 700; font-size: 1.05rem; }
+.info-card .ic-value.purple { color: var(--purple2); }
+.info-card .ic-value.cyan   { color: var(--cyan); }
+.info-card .ic-value.green  { color: var(--green); }
+.info-card .ic-value.amber  { color: var(--amber); }
+
+/* ── STEP CARDS ─────────────────────────────────────────── */
+.step-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 2rem; margin-bottom: 2rem;
+  position: relative; overflow: hidden;
+  transition: border-color 0.2s;
+}
+.step-card:hover { border-color: var(--purple); }
+.step-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--purple), var(--cyan));
+}
+.step-number {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--purple), #5B21B6);
+  clip-path: polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);
+  font-family: var(--display); font-weight: 700; font-size: 0.9rem;
+  color: white; margin-bottom: 1rem;
+}
+.step-title {
+  font-family: var(--display); font-size: 1.3rem; font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+.step-body { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.25rem; }
+.step-tips {
+  background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.25);
+  border-radius: 8px; padding: 1rem 1.25rem; margin-top: 1rem;
+  font-size: 0.875rem;
+}
+.step-tips strong { color: var(--cyan); display: block; margin-bottom: 0.3rem; }
+.mini-cube {
+  display: flex; flex-wrap: wrap; gap: 3px; width: 80px; float: right; margin: 0 0 1rem 1.5rem;
+}
+.mini-face {
+  width: 22px; height: 22px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.3);
+}
+
+/* ── ALGORITHM CARDS ────────────────────────────────────── */
+.algo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; margin: 1.5rem 0; }
+.algo-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem; position: relative;
+}
+.algo-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+.algo-name { font-family: var(--display); font-weight: 700; font-size: 1rem; }
+.diff-badge {
+  font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 99px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.diff-beginner { background: rgba(16,185,129,0.15); color: var(--green); }
+.diff-intermediate { background: rgba(245,158,11,0.15); color: var(--amber); }
+.diff-advanced { background: rgba(239,68,68,0.15); color: var(--red); }
+.algo-moves {
+  font-family: var(--mono); font-size: 0.88rem; color: var(--cyan);
+  background: rgba(6,182,212,0.06); border: 1px solid rgba(6,182,212,0.18);
+  border-radius: 6px; padding: 0.6rem 0.9rem; margin: 0.75rem 0;
+  word-break: break-all; line-height: 1.8;
+}
+.algo-footer { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--muted); }
+.copy-btn {
+  background: none; border: 1px solid var(--border); border-radius: 6px;
+  padding: 4px 12px; cursor: pointer; font-size: 0.78rem;
+  color: var(--muted); font-family: var(--body); transition: all 0.2s;
+}
+.copy-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.copy-btn.copied { border-color: var(--green); color: var(--green); }
+
+/* ── NOTATION TABLE ─────────────────────────────────────── */
+.notation-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem; margin: 1.5rem 0;
+}
+.notation-item {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.9rem 1.1rem;
+  display: flex; align-items: center; gap: 0.9rem;
+}
+.nota-symbol {
+  font-family: var(--mono); font-weight: 700; font-size: 1.2rem;
+  color: var(--purple2); min-width: 32px;
+}
+.nota-desc { font-size: 0.82rem; color: var(--muted); }
+
+/* ── CALLOUT BOXES ──────────────────────────────────────── */
+.callout {
+  border-radius: 8px; padding: 1rem 1.25rem; margin: 1.5rem 0;
+  border-left: 3px solid; font-size: 0.9rem; display: flex; gap: 0.75rem;
+}
+.callout-icon { font-size: 1.1rem; flex-shrink: 0; }
+.callout.note   { background: rgba(6,182,212,0.07);  border-color: var(--cyan); }
+.callout.warn   { background: rgba(245,158,11,0.07); border-color: var(--amber); }
+.callout.danger { background: rgba(239,68,68,0.07);  border-color: var(--red); }
+.callout.tip    { background: rgba(16,185,129,0.07); border-color: var(--green); }
+
+/* ── TIPS GRID ──────────────────────────────────────────── */
+.tips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+.tip-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem;
+}
+.tip-num {
+  font-family: var(--mono); font-size: 0.7rem; font-weight: 700;
+  color: var(--purple); opacity: 0.8; margin-bottom: 0.4rem;
+}
+.tip-card h4 { font-family: var(--display); font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; }
+.tip-card p  { font-size: 0.83rem; color: var(--muted); }
+
+/* ── MISTAKES ───────────────────────────────────────────── */
+.mistake-list { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
+.mistake-list li {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.9rem 1.2rem;
+  display: flex; align-items: flex-start; gap: 0.75rem; font-size: 0.9rem;
+}
+.mistake-list li::before { content: '✗'; color: var(--red); font-weight: 700; flex-shrink: 0; }
+
+/* ── FAQ ────────────────────────────────────────────────── */
+.faq-item {
+  border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.75rem;
+  overflow: hidden; transition: border-color 0.2s;
+}
+.faq-item.open { border-color: var(--purple); }
+.faq-q {
+  width: 100%; background: var(--card); border: none; color: var(--text);
+  font-family: var(--body); font-size: 0.95rem; font-weight: 600;
+  text-align: left; padding: 1.2rem 1.5rem; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 1rem; transition: background 0.2s;
+}
+.faq-q:hover { background: rgba(124,58,237,0.08); }
+.faq-chevron { font-size: 0.75rem; transition: transform 0.3s; color: var(--muted); }
+.faq-item.open .faq-chevron { transform: rotate(180deg); }
+.faq-a {
+  display: none; padding: 0 1.5rem 1.25rem; font-size: 0.9rem; color: var(--muted);
+}
+.faq-item.open .faq-a { display: block; }
+
+/* ── RELATED ARTICLES ───────────────────────────────────── */
+.related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+.related-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem; display: flex;
+  flex-direction: column; gap: 0.5rem; text-decoration: none;
+  transition: all 0.2s;
+}
+.related-card:hover {
+  border-color: var(--purple); transform: translateY(-3px);
+  box-shadow: var(--glow); text-decoration: none;
+}
+.related-icon { font-size: 1.5rem; }
+.related-card h4 { font-family: var(--display); font-size: 0.92rem; font-weight: 700; color: var(--text); }
+.related-card p  { font-size: 0.78rem; color: var(--muted); }
+
+/* ── NEWSLETTER ─────────────────────────────────────────── */
+.newsletter {
+  background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(6,182,212,0.1));
+  border: 1px solid rgba(124,58,237,0.35); border-radius: 16px;
+  padding: 2.5rem; text-align: center; margin: 3rem 0;
+}
+.newsletter h2 { font-family: var(--display); font-size: 1.6rem; font-weight: 700; margin-bottom: 0.6rem; }
+.newsletter p { color: var(--muted); margin-bottom: 1.5rem; }
+.nl-form { display: flex; gap: 0.75rem; max-width: 400px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
+.nl-input {
+  flex: 1; min-width: 200px; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 11px 16px; color: var(--text); font-family: var(--body);
+  font-size: 0.9rem;
+}
+.nl-input:focus { outline: 2px solid var(--purple); border-color: transparent; }
+.nl-btn {
+  background: linear-gradient(135deg, var(--purple), #5B21B6);
+  color: white; border: none; border-radius: 8px; padding: 11px 24px;
+  font-weight: 600; cursor: pointer; font-family: var(--display); transition: opacity 0.2s;
+}
+.nl-btn:hover { opacity: 0.85; }
+.nl-note { font-size: 0.75rem; color: var(--muted); margin-top: 0.75rem; }
+
+/* ── SHARE BUTTONS ──────────────────────────────────────── */
+.share-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin: 1.5rem 0; }
+.share-btn {
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px;
+  font-size: 0.8rem; color: var(--muted); background: none; cursor: pointer;
+  transition: all 0.2s; font-family: var(--body); display: flex; align-items: center; gap: 5px;
+}
+.share-btn:hover { border-color: var(--purple); color: var(--purple2); }
+
+/* ── FOOTER ─────────────────────────────────────────────── */
+footer {
+  background: var(--bg2); border-top: 1px solid var(--border);
+  padding: 3rem clamp(1rem, 4vw, 2.5rem) 2rem;
+  margin-top: 4rem;
+}
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem; max-width: 1200px; margin: 0 auto; }
+@media (max-width: 640px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+.footer-brand p { color: var(--muted); font-size: 0.85rem; margin-top: 0.75rem; max-width: 260px; }
+.footer-col h4 { font-family: var(--display); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 1rem; }
+.footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+.footer-col a { font-size: 0.85rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+.footer-col a:hover { color: var(--text); }
+.footer-bottom {
+  max-width: 1200px; margin: 2rem auto 0; padding-top: 1.5rem;
+  border-top: 1px solid var(--border); display: flex; justify-content: space-between;
+  flex-wrap: wrap; gap: 0.5rem; font-size: 0.8rem; color: var(--muted);
+}
+.social-row { display: flex; gap: 0.75rem; }
+.social-btn {
+  width: 32px; height: 32px; border: 1px solid var(--border);
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-size: 0.8rem; transition: all 0.2s; text-decoration: none;
+}
+.social-btn:hover { border-color: var(--purple); color: var(--purple2); }
+
+/* ── BACK TO TOP ────────────────────────────────────────── */
+#back-top {
+  position: fixed; bottom: 2rem; right: 2rem; z-index: 800;
+  background: linear-gradient(135deg, var(--purple), #5B21B6);
+  border: none; border-radius: 50%; width: 44px; height: 44px;
+  color: white; font-size: 1.1rem; cursor: pointer;
+  box-shadow: var(--glow); transition: all 0.3s;
+  opacity: 0; pointer-events: none; display: flex; align-items: center; justify-content: center;
+}
+#back-top.visible { opacity: 1; pointer-events: all; }
+#back-top:hover { transform: translateY(-3px); }
+
+/* ── SCROLL ANIMATION ───────────────────────────────────── */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ── SEARCH OVERLAY ─────────────────────────────────────── */
+#search-overlay {
+  display: none; position: fixed; inset: 0; z-index: 950;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+  align-items: flex-start; justify-content: center; padding-top: 10vh;
+}
+#search-overlay.open { display: flex; }
+.search-box {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1rem; width: 90%; max-width: 600px;
+}
+.search-input {
+  width: 100%; background: none; border: none; outline: none;
+  font-size: 1.1rem; color: var(--text); font-family: var(--body);
+  padding: 0.5rem 0;
+}
+.search-close {
+  float: right; background: none; border: none; color: var(--muted);
+  font-size: 1.2rem; cursor: pointer; padding: 4px;
+}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- HEADER -->
+<header>
+  <a href="#" class="logo">
+    <div class="logo-icon">M</div>
+    MegaGuide
+  </a>
+  <nav>
+    <a href="#intro">Intro</a>
+    <a href="#notation">Notation</a>
+    <a href="#steps">Steps</a>
+    <a href="#algorithms">Algorithms</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+  <div class="header-actions">
+    <button class="icon-btn" id="search-toggle" aria-label="Search">🔍</button>
+    <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">🌙</button>
+    <button class="icon-btn hamburger" id="hamburger-btn" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<!-- MOBILE NAV -->
+<div id="mobile-nav">
+  <a href="#intro" onclick="closeMobile()">Introduction</a>
+  <a href="#notation" onclick="closeMobile()">Notation</a>
+  <a href="#steps" onclick="closeMobile()">Solving Steps</a>
+  <a href="#algorithms" onclick="closeMobile()">Algorithms</a>
+  <a href="#tips" onclick="closeMobile()">Tips</a>
+  <a href="#faq" onclick="closeMobile()">FAQ</a>
+</div>
+
+<!-- SEARCH OVERLAY -->
+<div id="search-overlay">
+  <div class="search-box">
+    <button class="search-close" id="search-close">✕</button>
+    <input class="search-input" placeholder="Search the tutorial… e.g. last layer, R' U R" autofocus>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:0.75rem;">Try: "white star", "corner permutation", "R notation"</p>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-penta-bg" id="penta-bg"></div>
+  <div class="badge">⬡ Complete Beginner Guide</div>
+  <h1>Solve the <span>Megaminx</span><br>Step by Step</h1>
+  <p class="hero-sub">Master the 12-sided dodecahedron puzzle with clear algorithms, illustrated steps, and tips from speedsolvers.</p>
+  <div class="hero-meta">
+    <span>✍️ By Alex Rivera</span>
+    <span>📅 Updated June 2026</span>
+    <span>⏱ 25 min read</span>
+    <span>🏷 Puzzles</span>
+  </div>
+  <a href="#steps" class="cta-btn">Start Solving ↓</a>
+
+  <!-- Decorative SVG Megaminx -->
+  <div class="hero-shape">
+    <svg class="megaminx-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Pentagon faces, colorful -->
+      <polygon points="100,15 168,62 142,145 58,145 32,62" fill="none" stroke="#7C3AED" stroke-width="1.5" opacity="0.5"/>
+      <polygon points="100,30 152,68 131,132 69,132 48,68" fill="rgba(124,58,237,0.12)" stroke="#7C3AED" stroke-width="1"/>
+      <!-- inner pentagons representing faces -->
+      <polygon points="100,42 140,70 124,112 76,112 60,70" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1"/>
+      <polygon points="100,55 128,74 118,100 82,100 72,74" fill="rgba(16,185,129,0.2)" stroke="#10B981" stroke-width="1"/>
+      <!-- Spokes -->
+      <line x1="100" y1="15" x2="100" y2="185" stroke="#7C3AED" stroke-width="0.5" opacity="0.3"/>
+      <line x1="32" y1="62" x2="168" y2="138" stroke="#06B6D4" stroke-width="0.5" opacity="0.3"/>
+      <line x1="168" y1="62" x2="32" y2="138" stroke="#10B981" stroke-width="0.5" opacity="0.3"/>
+      <line x1="58" y1="145" x2="142" y2="55" stroke="#F59E0B" stroke-width="0.5" opacity="0.3"/>
+      <!-- Center dot -->
+      <circle cx="100" cy="100" r="5" fill="#7C3AED"/>
+      <circle cx="100" cy="100" r="12" fill="none" stroke="#7C3AED" stroke-width="0.5" opacity="0.5"/>
+      <!-- Outer ring -->
+      <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(124,58,237,0.25)" stroke-width="0.5" stroke-dasharray="4 4"/>
+    </svg>
+  </div>
+
+  <div class="share-row" style="justify-content:center; margin-top:2rem;">
+    <button class="share-btn">🐦 Twitter</button>
+    <button class="share-btn">📘 Facebook</button>
+    <button class="share-btn">🔗 Copy Link</button>
+    <button class="share-btn">📌 Pinterest</button>
+  </div>
+</section>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR TOC -->
+  <aside class="toc-sidebar">
+    <h3>On this page</h3>
+    <ol>
+      <li><a href="#intro" class="toc-link">Introduction</a></li>
+      <li><a href="#basics" class="toc-link">Megaminx Basics</a></li>
+      <li><a href="#notation" class="toc-link">Notation Guide</a></li>
+      <li><a href="#steps" class="toc-link">Solving Steps</a></li>
+      <li><a href="#algorithms" class="toc-link">Algorithms</a></li>
+      <li><a href="#tips" class="toc-link">Tips & Tricks</a></li>
+      <li><a href="#mistakes" class="toc-link">Common Mistakes</a></li>
+      <li><a href="#faq" class="toc-link">FAQ</a></li>
+      <li><a href="#related" class="toc-link">Related Guides</a></li>
+    </ol>
+  </aside>
+
+  <!-- ARTICLE -->
+  <article class="article">
+
+    <!-- ── INTRO ── -->
+    <section id="intro" class="section reveal">
+      <p class="section-eyebrow">Introduction</p>
+      <h2 class="section-title">What is a Megaminx?</h2>
+      <p style="color:var(--muted); margin-bottom:1.5rem;">
+        The Megaminx is a dodecahedral twisty puzzle — a puzzle shaped like a 12-sided solid, where each face is a regular pentagon. With 12 faces, each a different color, and 50 moveable pieces (20 corners, 30 edges), it looks terrifying at first glance. In practice, if you can solve a 3×3 Rubik's Cube, the Megaminx is well within reach.
+      </p>
+
+      <div class="info-grid">
+        <div class="info-card"><span class="ic-label">Total Pieces</span><span class="ic-value cyan">62 pieces</span></div>
+        <div class="info-card"><span class="ic-label">Corner Pieces</span><span class="ic-value purple">20 corners</span></div>
+        <div class="info-card"><span class="ic-label">Edge Pieces</span><span class="ic-value green">30 edges</span></div>
+        <div class="info-card"><span class="ic-label">Center Pieces</span><span class="ic-value amber">12 centers</span></div>
+        <div class="info-card"><span class="ic-label">Color Faces</span><span class="ic-value cyan">12 faces</span></div>
+        <div class="info-card"><span class="ic-label">Difficulty</span><span class="ic-value amber">Intermediate</span></div>
+      </div>
+
+      <div class="callout note">
+        <span class="callout-icon">💡</span>
+        <div><strong>Good news:</strong> The Megaminx uses the same basic principles as a 3×3 cube. Many algorithms are direct adaptations — you won't be starting from zero.</div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── BASICS ── -->
+    <section id="basics" class="section reveal">
+      <p class="section-eyebrow">Fundamentals</p>
+      <h2 class="section-title">Megaminx Basics</h2>
+      <p style="color:var(--muted); margin-bottom:1.5rem;">
+        Before diving in, understand the anatomy. The Megaminx has 12 pentagonal faces. Each face rotates independently by 72° increments (pentagon geometry). The standard color scheme has white on top and grey on the opposite bottom face, with 10 colors arranged around them.
+      </p>
+      <div class="callout tip">
+        <span class="callout-icon">🎯</span>
+        <div><strong>Key insight:</strong> Unlike the 3×3, each face turn moves 5 edges and 5 corners at once. The logic is the same; just more pieces to track per layer.</div>
+      </div>
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <div><strong>Color scheme:</strong> Memorize your cube's specific color arrangement before starting. Different brands use different schemes, and mixing them up mid-solve is the #1 source of confusion for beginners.</div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── NOTATION ── -->
+    <section id="notation" class="section reveal">
+      <p class="section-eyebrow">Notation</p>
+      <h2 class="section-title">Move Notation Guide</h2>
+      <p style="color:var(--muted); margin-bottom:1.5rem;">
+        Megaminx notation follows the same conventions as standard cube notation, with a few extras for the additional faces.
+      </p>
+
+      <div class="notation-grid">
+        <div class="notation-item"><span class="nota-symbol">R</span><span class="nota-desc">Right face clockwise</span></div>
+        <div class="notation-item"><span class="nota-symbol">R'</span><span class="nota-desc">Right face counter-CW</span></div>
+        <div class="notation-item"><span class="nota-symbol">L</span><span class="nota-desc">Left face clockwise</span></div>
+        <div class="notation-item"><span class="nota-symbol">L'</span><span class="nota-desc">Left face counter-CW</span></div>
+        <div class="notation-item"><span class="nota-symbol">U</span><span class="nota-desc">Top face clockwise</span></div>
+        <div class="notation-item"><span class="nota-symbol">U'</span><span class="nota-desc">Top face counter-CW</span></div>
+        <div class="notation-item"><span class="nota-symbol">D</span><span class="nota-desc">Down face clockwise</span></div>
+        <div class="notation-item"><span class="nota-symbol">D'</span><span class="nota-desc">Down face counter-CW</span></div>
+        <div class="notation-item"><span class="nota-symbol">F</span><span class="nota-desc">Front face clockwise</span></div>
+        <div class="notation-item"><span class="nota-symbol">F'</span><span class="nota-desc">Front face counter-CW</span></div>
+        <div class="notation-item"><span class="nota-symbol">R2</span><span class="nota-desc">Right face double turn</span></div>
+        <div class="notation-item"><span class="nota-symbol">Rw</span><span class="nota-desc">Wide right move</span></div>
+        <div class="notation-item"><span class="nota-symbol">y</span><span class="nota-desc">Rotate puzzle on U axis</span></div>
+        <div class="notation-item"><span class="nota-symbol">x</span><span class="nota-desc">Rotate puzzle on R axis</span></div>
+        <div class="notation-item"><span class="nota-symbol">++</span><span class="nota-desc">Double-layer clockwise</span></div>
+        <div class="notation-item"><span class="nota-symbol">--</span><span class="nota-desc">Double-layer counter-CW</span></div>
+      </div>
+      <div class="callout note">
+        <span class="callout-icon">📝</span>
+        <div>Prime (') always means counter-clockwise. A number after a letter (R2) means repeat that move. Get comfortable with these before attempting algorithms.</div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── STEPS ── -->
+    <section id="steps" class="section reveal">
+      <p class="section-eyebrow">The Method</p>
+      <h2 class="section-title">7 Steps to a Solved Megaminx</h2>
+
+      <!-- STEP 1 -->
+      <div class="step-card reveal">
+        <div class="step-number">01</div>
+        <h3 class="step-title">Create the White Star</h3>
+        <p class="step-body">
+          Start by solving the 5 white edges around the white center, forming a "star." This is intuitive — no algorithm required. Focus on matching the edge's side color to the adjacent center color. The star must have each white edge correctly oriented and color-matched on the sides.
+        </p>
+        <div class="callout tip">
+          <span class="callout-icon">⭐</span>
+          <div><strong>Pro tip:</strong> Work one edge at a time. Use the 3×3 principle of inserting edges from the top — even at this stage, avoid disturbing edges you've already placed.</div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-card reveal">
+        <div class="step-number">02</div>
+        <h3 class="step-title">Complete First Layer Corners</h3>
+        <p class="step-body">
+          Place the 5 white corners to complete the white face. Each corner has 3 colors and must sit between its matching edge pieces. Use the standard Right Insert or Left Insert algorithms from 3×3 solving.
+        </p>
+        <div style="font-family:var(--mono); font-size:0.85rem; background:rgba(6,182,212,0.06); border:1px solid rgba(6,182,212,0.18); border-radius:8px; padding:0.9rem 1.2rem; margin:1rem 0; color:var(--cyan);">
+          Right Insert: R U R' U'<br>
+          Left Insert:  L' U' L U
+        </div>
+        <div class="callout note">
+          <span class="callout-icon">💡</span>
+          <div>Repeat the insert trigger multiple times if the piece doesn't slot in on the first try. Usually 2–3 repetitions work.</div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step-card reveal">
+        <div class="step-number">03</div>
+        <h3 class="step-title">Solve the Second Layer</h3>
+        <p class="step-body">
+          The second layer contains 5 more edges. Each edge must be moved from the top layer and inserted into its correct slot without disturbing the first layer. This is where orientation matters — a flipped edge requires an additional setup move.
+        </p>
+        <div style="font-family:var(--mono); font-size:0.85rem; background:rgba(124,58,237,0.08); border:1px solid rgba(124,58,237,0.25); border-radius:8px; padding:0.9rem 1.2rem; margin:1rem 0; color:var(--purple2);">
+          Insert Right: U R U' R' U' F' U F<br>
+          Insert Left:  U' L' U L U F U' F'
+        </div>
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <div>Make sure the edge is in the top layer before inserting. Never force an edge from the middle layer directly — always bring it up first.</div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step-card reveal">
+        <div class="step-number">04</div>
+        <h3 class="step-title">Solve the Remaining Middle Layers</h3>
+        <p class="step-body">
+          Continue the same edge-insertion process through layers 3, 4, and 5. By this point you're building the "equator" of the puzzle. Work from the top down, and rotate the puzzle when needed to position new edges.
+        </p>
+        <div class="callout tip">
+          <span class="callout-icon">🔄</span>
+          <div>As the puzzle fills up, you'll need to use setup moves before insertions. Slow down and look 2–3 moves ahead to avoid undoing progress.</div>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="step-card reveal">
+        <div class="step-number">05</div>
+        <h3 class="step-title">Last Layer Star</h3>
+        <p class="step-body">
+          Flip the puzzle so grey is on top. Create a grey star using the Star Algorithm. Orient the 5 grey edges to point inward. One edge is used as an anchor and the algorithm cycles the remaining edges into orientation.
+        </p>
+        <div style="font-family:var(--mono); font-size:0.85rem; background:rgba(6,182,212,0.06); border:1px solid rgba(6,182,212,0.18); border-radius:8px; padding:0.9rem 1.2rem; margin:1rem 0; color:var(--cyan);">
+          Star Alg: (R U R' U') × 5 — applied until star forms
+        </div>
+      </div>
+
+      <!-- STEP 6 -->
+      <div class="step-card reveal">
+        <div class="step-number">06</div>
+        <h3 class="step-title">Last Layer Corners</h3>
+        <p class="step-body">
+          Orient and then permute the 5 grey corners. First twist them all so the grey sticker faces up (orientation), then cycle them into their correct positions (permutation). These are 2 separate sub-steps.
+        </p>
+        <div style="font-family:var(--mono); font-size:0.85rem; background:rgba(124,58,237,0.08); border:1px solid rgba(124,58,237,0.25); border-radius:8px; padding:0.9rem 1.2rem; margin:1rem 0; color:var(--purple2);">
+          Orient: R' D' R D (repeat 2× or 4× per corner)<br>
+          Permute: U R U' L' U R' U' L
+        </div>
+        <div class="callout danger">
+          <span class="callout-icon">❗</span>
+          <div><strong>Critical:</strong> When orienting corners, only move the D and R faces. Don't rotate the entire puzzle mid-algorithm or you'll scramble completed faces.</div>
+        </div>
+      </div>
+
+      <!-- STEP 7 -->
+      <div class="step-card reveal">
+        <div class="step-number">07</div>
+        <h3 class="step-title">Final Edge Permutation</h3>
+        <p class="step-body">
+          The last step: cycle the 5 grey edges to their correct positions. Only permutation is needed here (the star step handled orientation). Apply a 3-cycle algorithm to swap edges until all 5 are solved. Take your time — you're one step from a fully solved Megaminx!
+        </p>
+        <div style="font-family:var(--mono); font-size:0.85rem; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:8px; padding:0.9rem 1.2rem; margin:1rem 0; color:var(--green);">
+          3-cycle: R++ D-- R++ U++ R-- D++ R-- U-- (×3)
+        </div>
+        <div class="callout tip">
+          <span class="callout-icon">🎉</span>
+          <div>If you reach 4 edges solved with 1 remaining misplaced, something went wrong 1–2 steps back. Don't despair — back up to step 6 and re-check your corners.</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── ALGORITHMS ── -->
+    <section id="algorithms" class="section reveal">
+      <p class="section-eyebrow">Reference</p>
+      <h2 class="section-title">Algorithm Cards</h2>
+      <p style="color:var(--muted); margin-bottom:1.5rem;">Quick-copy algorithm reference for every stage of the solve. Tap the copy button to grab a sequence.</p>
+
+      <div class="algo-grid">
+        <div class="algo-card">
+          <div class="algo-card-header">
+            <span class="algo-name">Right Insert</span>
+            <span class="diff-badge diff-beginner">Beginner</span>
+          </div>
+          <p style="font-size:0.82rem;color:var(--muted);">Place first layer corner from top layer, right side.</p>
+          <div class="algo-moves">R U R' U'</div>
+          <div class="algo-footer"><span>4 moves</span><button class="copy-btn" data-alg="R U R' U'">Copy</button></div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-card-header">
+            <span class="algo-name">Left Insert</span>
+            <span class="diff-badge diff-beginner">Beginner</span>
+          </div>
+          <p style="font-size:0.82rem;color:var(--muted);">Place first layer corner from top layer, left side.</p>
+          <div class="algo-moves">L' U' L U</div>
+          <div class="algo-footer"><span>4 moves</span><button class="copy-btn" data-alg="L' U' L U">Copy</button></div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-card-header">
+            <span class="algo-name">Edge Insert Right</span>
+            <span class="diff-badge diff-beginner">Beginner</span>
+          </div>
+          <p style="font-size:0.82rem;color:var(--muted);">Insert second layer edge, right orientation.</p>
+          <div class="algo-moves">U R U' R' U' F' U F</div>
+          <div class="algo-footer"><span>8 moves</span><button class="copy-btn" data-alg="U R U' R' U' F' U F">Copy</button></div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-card-header">
+            <span class="algo-name">Edge Insert Left</span>
+            <span class="diff-badge diff-beginner">Beginner</span>
+          </div>
+          <p style="font-size:0.82rem;color:var(--muted);">Insert second layer edge, left orientation.</p>
+          <div class="algo-moves">U' L' U L U F U' F'</div>
+          <div class="algo-footer"><span>8 moves</span><button class="copy-btn" data-alg="U' L' U L U F U' F'">Copy</button></div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-card-header">
+            <span class="algo-name">Corner Orient</span>
+            <span class="diff-badge diff-intermediate">Intermediate</span>
+          </div>
+          <p style="font-size:0.82rem;color:var(--muted);">Twist last layer corners in place. Repeat per corner.</p>
+          <div class="algo-moves">R' D' R D<br>R' D' R D</div>
+          <div class="algo-footer"><span>8 moves (×n)</span><button class="copy-btn" data-alg="R' D' R D R' D' R D">Copy</button></div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-card-header">
+            <span class="algo-name">Corner Permute</span>
+            <span class="diff-badge diff-intermediate">Intermediate</span>
+          </div>
+          <p style="font-size:0.82rem;color:var(--muted);">3-cycles 3 last layer corners clockwise.</p>
+          <div class="algo-moves">U R U' L' U R' U' L</div>
+          <div class="algo-footer"><span>8 moves</span><button class="copy-btn" data-alg="U R U' L' U R' U' L">Copy</button></div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-card-header">
+            <span class="algo-name">Edge 3-Cycle</span>
+            <span class="diff-badge diff-advanced">Advanced</span>
+          </div>
+          <p style="font-size:0.82rem;color:var(--muted);">Cycles 3 last layer edges without disturbing corners.</p>
+          <div class="algo-moves">R++ D-- R++ U++ R-- D++ R-- U--</div>
+          <div class="algo-footer"><span>8 moves (×3)</span><button class="copy-btn" data-alg="R++ D-- R++ U++ R-- D++ R-- U--">Copy</button></div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-card-header">
+            <span class="algo-name">Y-Perm</span>
+            <span class="diff-badge diff-advanced">Advanced</span>
+          </div>
+          <p style="font-size:0.82rem;color:var(--muted);">Diagonal corner swap for last layer speedsolving.</p>
+          <div class="algo-moves">F R U' R' U' R U R' F' R U R' U' R' F R F'</div>
+          <div class="algo-footer"><span>18 moves</span><button class="copy-btn" data-alg="F R U' R' U' R U R' F' R U R' U' R' F R F'">Copy</button></div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── TIPS ── -->
+    <section id="tips" class="section reveal">
+      <p class="section-eyebrow">Pro Advice</p>
+      <h2 class="section-title">Tips for Success</h2>
+
+      <div class="tips-grid">
+        <div class="tip-card">
+          <div class="tip-num">01</div>
+          <h4>Learn Notation First</h4>
+          <p>Spend 30 minutes getting comfortable with R, L, U, D, F moves before trying any algorithm. Muscle memory starts here.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-num">02</div>
+          <h4>Solve Slowly First</h4>
+          <p>Speed comes after accuracy. Your first 10 solves should be methodical — pause and verify at each step before proceeding.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-num">03</div>
+          <h4>Don't Memorize Immediately</h4>
+          <p>Understand the goal of each algorithm before memorizing the moves. Comprehension prevents "what step am I on?" confusion.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-num">04</div>
+          <h4>Watch Edge Orientation</h4>
+          <p>Edges can be flipped. Misoriented edges in the lower layers will cause big problems in the last layer. Verify each edge as you insert it.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-num">05</div>
+          <h4>Practice Finger Tricks</h4>
+          <p>The R U R' U' trigger is the most common. Practice executing it smoothly without looking at your hand — this alone shaves minutes off your time.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-num">06</div>
+          <h4>Use a Quality Cube</h4>
+          <p>A good Megaminx (GAN, YuHu, Moyu) turns smoothly and prevents lock-ups mid-algorithm. Avoid cheap entry-level cubes that catch.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── MISTAKES ── -->
+    <section id="mistakes" class="section reveal">
+      <p class="section-eyebrow">Watch Out</p>
+      <h2 class="section-title">Common Mistakes</h2>
+
+      <ul class="mistake-list">
+        <li><div><strong>Wrong edge placement</strong> — Inserting an edge into the correct slot but facing the wrong direction. Always check both colors before inserting.</div></li>
+        <li><div><strong>Incorrect corner orientation</strong> — Skipping the orientation check and assuming corners are correct. Every corner must have its grey sticker facing up before permuting.</div></li>
+        <li><div><strong>Forgetting color order</strong> — Not knowing which face colors are adjacent. Learn the color scheme before starting.</div></li>
+        <li><div><strong>Using the wrong algorithm</strong> — Applying a right-insert when a left-insert is needed. Verify edge position relative to its slot before choosing.</div></li>
+        <li><div><strong>Rotating the cube mid-algorithm</strong> — Especially dangerous during corner orientation. The D face must stay fixed throughout the orientation algorithm.</div></li>
+        <li><div><strong>Forcing turns</strong> — If a face doesn't turn smoothly, stop and check alignment. Forcing can pop pieces and ruin the puzzle's mechanism.</div></li>
+      </ul>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── FAQ ── -->
+    <section id="faq" class="section reveal">
+      <p class="section-eyebrow">FAQ</p>
+      <h2 class="section-title">Frequently Asked Questions</h2>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-q">What exactly is a Megaminx? <span class="faq-chevron">▼</span></button>
+          <div class="faq-a">A Megaminx is a dodecahedral twisty puzzle with 12 pentagonal faces, each a different color. It has 62 total pieces (12 fixed centers, 20 corners, 30 edges) and over 10<sup>68</sup> possible permutations.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">Is it harder than a 3×3 Rubik's Cube? <span class="faq-chevron">▼</span></button>
+          <div class="faq-a">Not as much as it looks. The logic is nearly identical — just more pieces per layer. If you know the 3×3 beginner method, you can learn Megaminx in a day. The main challenge is scale and tracking 12 colors.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">How long does it take to solve? <span class="faq-chevron">▼</span></button>
+          <div class="faq-a">Beginners typically take 20–45 minutes for their first solve. With practice, sub-5 minutes is achievable with the beginner method. World record holders solve in under 30 seconds.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">Do I need to know the 3×3 method first? <span class="faq-chevron">▼</span></button>
+          <div class="faq-a">Not required, but strongly recommended. The edge and corner insertion algorithms are identical to the 3×3 beginner method. Having that foundation cuts learning time significantly.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">What's the best Megaminx for beginners? <span class="faq-chevinner">▼</span></button>
+          <div class="faq-a">The MoYu Meilong Megaminx and YuHu V2 M are excellent budget options. For a more premium feel, the GAN Megaminx is highly rated. Avoid no-brand cubes from discount marketplaces — they turn poorly and break quickly.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">Can young children solve a Megaminx? <span class="faq-chevron">▼</span></button>
+          <div class="faq-a">With guidance, children 10 and older can learn the beginner method. The main hurdle is memorizing notation and multiple algorithms, which requires patience. Younger children may do better starting with a 2×2 or Pyraminx first.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">How do I practice for faster solves? <span class="faq-chevron">▼</span></button>
+          <div class="faq-a">Use a timer app (CubeDesk, csTimer) to track progress. Drill individual steps in isolation. The biggest speed gains come from look-ahead (planning the next step while executing the current one) and reducing pauses between algorithms.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">What comes after the beginner method? <span class="faq-chevron">▼</span></button>
+          <div class="faq-a">Most speedsolvers move to the Ortega method for corners and then to full CFOP-based Megaminx solving. The Yau method adapted for Megaminx is also popular. Once you're consistently under 5 minutes, exploring these is worthwhile.</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── RELATED ── -->
+    <section id="related" class="section reveal">
+      <p class="section-eyebrow">Keep Learning</p>
+      <h2 class="section-title">Related Guides</h2>
+
+      <div class="related-grid">
+        <a href="#" class="related-card">
+          <div class="related-icon">🟥</div>
+          <h4>3×3 Beginner Method</h4>
+          <p>The foundation. Start here if you haven't already.</p>
+        </a>
+        <a href="#" class="related-card">
+          <div class="related-icon">🟦</div>
+          <h4>2×2 Rubik's Cube</h4>
+          <p>Corners only — great for learning orientation & permutation.</p>
+        </a>
+        <a href="#" class="related-card">
+          <div class="related-icon">🔺</div>
+          <h4>Pyraminx Tutorial</h4>
+          <p>Tetrahedral puzzle with a surprisingly clean beginner method.</p>
+        </a>
+        <a href="#" class="related-card">
+          <div class="related-icon">⬡</div>
+          <h4>Skewb Guide</h4>
+          <p>Deceptively simple — only 5 unique algorithms to memorize.</p>
+        </a>
+        <a href="#" class="related-card">
+          <div class="related-icon">🪞</div>
+          <h4>Mirror Cube</h4>
+          <p>A shape-mod 3×3 — solved by shape, not color.</p>
+        </a>
+        <a href="#" class="related-card">
+          <div class="related-icon">⚡</div>
+          <h4>Speedcubing Tips</h4>
+          <p>Hardware, lube, lookahead, and timer workflow for sub-minute times.</p>
+        </a>
+      </div>
+    </section>
+
+    <!-- NEWSLETTER -->
+    <div class="newsletter reveal">
+      <h2>📬 New tutorials every week</h2>
+      <p>Get step-by-step guides, algorithm sheets, and cubing news in your inbox.</p>
+      <div class="nl-form">
+        <input class="nl-input" type="email" placeholder="your@email.com">
+        <button class="nl-btn">Subscribe</button>
+      </div>
+      <p class="nl-note">No spam. Unsubscribe any time. We respect your privacy.</p>
+    </div>
+
+  </article>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="#" class="logo">
+        <div class="logo-icon">M</div>
+        MegaGuide
+      </a>
+      <p>Comprehensive tutorials for twisty puzzle enthusiasts, from first-time solvers to competitive speedcubers.</p>
+      <div class="social-row" style="margin-top:1rem;">
+        <a href="#" class="social-btn">𝕏</a>
+        <a href="#" class="social-btn">▶</a>
+        <a href="#" class="social-btn">📸</a>
+        <a href="#" class="social-btn">💬</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Tutorials</h4>
+      <ul>
+        <li><a href="#">3×3 Cube</a></li>
+        <li><a href="#">2×2 Cube</a></li>
+        <li><a href="#">Megaminx</a></li>
+        <li><a href="#">Pyraminx</a></li>
+        <li><a href="#">Skewb</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Resources</h4>
+      <ul>
+        <li><a href="#">Notation Guide</a></li>
+        <li><a href="#">Algorithm DB</a></li>
+        <li><a href="#">Speedcubing</a></li>
+        <li><a href="#">Cube Reviews</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 MegaGuide. All rights reserved.</span>
+    <span>Made with ❤️ for the cubing community</span>
+  </div>
+</footer>
+
+<!-- BACK TO TOP -->
+<button id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// ── PROGRESS BAR ──────────────────────────────────────────
+const progressBar = document.getElementById('progress-bar');
+window.addEventListener('scroll', () => {
+  const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+  progressBar.style.width = pct + '%';
+});
+
+// ── BACK TO TOP ───────────────────────────────────────────
+const backTop = document.getElementById('back-top');
+window.addEventListener('scroll', () => {
+  backTop.classList.toggle('visible', window.scrollY > 400);
+});
+
+// ── THEME TOGGLE ──────────────────────────────────────────
+const themeBtn = document.getElementById('theme-toggle');
+themeBtn.addEventListener('click', () => {
+  const html = document.documentElement;
+  const isDark = html.dataset.theme === 'dark';
+  html.dataset.theme = isDark ? 'light' : 'dark';
+  themeBtn.textContent = isDark ? '🌙' : '☀️';
+});
+
+// ── MOBILE NAV ────────────────────────────────────────────
+const hamburger = document.getElementById('hamburger-btn');
+const mobileNav = document.getElementById('mobile-nav');
+hamburger.addEventListener('click', () => mobileNav.classList.toggle('open'));
+function closeMobile() { mobileNav.classList.remove('open'); }
+
+// ── SEARCH ────────────────────────────────────────────────
+document.getElementById('search-toggle').addEventListener('click', () => {
+  document.getElementById('search-overlay').classList.add('open');
+  document.querySelector('.search-input').focus();
+});
+document.getElementById('search-close').addEventListener('click', () => {
+  document.getElementById('search-overlay').classList.remove('open');
+});
+document.getElementById('search-overlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('search-overlay'))
+    document.getElementById('search-overlay').classList.remove('open');
+});
+
+// ── FAQ ACCORDION ─────────────────────────────────────────
+document.querySelectorAll('.faq-q').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = btn.parentElement;
+    item.classList.toggle('open');
+  });
+});
+
+// ── COPY BUTTONS ──────────────────────────────────────────
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(btn.dataset.alg).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  });
+});
+
+// ── ACTIVE TOC ────────────────────────────────────────────
+const sections = document.querySelectorAll('section[id]');
+const tocLinks = document.querySelectorAll('.toc-link');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      tocLinks.forEach(l => l.classList.remove('active'));
+      const active = document.querySelector(`.toc-link[href="#${e.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0% -60% 0%' });
+sections.forEach(s => observer.observe(s));
+
+// ── SCROLL ANIMATIONS ─────────────────────────────────────
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// ── FLOATING PENTAGON BG ──────────────────────────────────
+const bg = document.getElementById('penta-bg');
+const colors = ['#7C3AED','#06B6D4','#10B981','#F59E0B','#EF4444'];
+for (let i = 0; i < 12; i++) {
+  const el = document.createElement('div');
+  const size = 60 + Math.random() * 180;
+  el.className = 'penta';
+  Object.assign(el.style, {
+    width: size + 'px', height: size + 'px',
+    left: Math.random() * 100 + '%',
+    top:  Math.random() * 100 + '%',
+    background: colors[Math.floor(Math.random() * colors.length)],
+    animationDelay: (Math.random() * 10) + 's',
+    animationDuration: (15 + Math.random() * 15) + 's',
+  });
+  bg.appendChild(el);
+}
+</script>
+</body>
+</html>
