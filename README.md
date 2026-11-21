@@ -1,4 +1,13 @@
+##CODE REVIEW
+THIS REPOSITORY IS REVIEWED FOR:
 
+CODE QUALITY
+
+BUG DETECTION
+
+PERFORMENCE
+SECURITY
+MAINTAINABILITY
 # Megaminx Solver Guide Website link:https://jocular-twilight-2a1ae0.netlify.app/
 
 A simple educational website that helps users learn how to solve a **Megaminx puzzle** through clear, step-by-step instructions. The website is designed to make learning easy with visual explanations, solving algorithms, helpful tips, and frequently asked questions.
